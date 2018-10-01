@@ -5,68 +5,73 @@ import java.util.List;
 
 public class Account {
 
-    public static final int CHECKING = 0;
-    public static final int SAVINGS = 1;
-    public static final int MAXI_SAVINGS = 2;
+    private AccountType accountType;
+    public List<Transaction> transactions = new ArrayList<Transaction>();
 
-    private final int accountType;
-    public List<Transaction> transactions;
-
-    public Account(int accountType) {
+    public Account(AccountType accountType) {
         this.accountType = accountType;
-        this.transactions = new ArrayList<Transaction>();
     }
 
-    public void deposit(double amount) {
+
+    public boolean depositOrWithdraw(double amount, boolean deposit) {
         if (amount <= 0) {
             throw new IllegalArgumentException("amount must be greater than zero");
         } else {
-            transactions.add(new Transaction(amount));
+            if(deposit) {
+                transactions.add(new Transaction(amount));
+                return true;
+            } else {
+                transactions.add(new Transaction(-amount));
+                return true;
+            }
         }
     }
 
-public void withdraw(double amount) {
-    if (amount <= 0) {
-        throw new IllegalArgumentException("amount must be greater than zero");
-    } else {
-        transactions.add(new Transaction(-amount));
-    }
-}
-
+    //Calculates interest over time.
     public double interestEarned() {
         double amount = sumTransactions();
-        switch(accountType){
+        int oneThousand = 1000;
+        int twoThousand = 2000;
+        double standardRate = 0.001;
+        double doubleRate = 0.002;
+        double maxiStandardRate = 0.02;
+        double maxiRateOver1000 = 0.05;
+        double maxiRateOver2000 = 0.1;
+
+
+        switch (accountType) {
+            case CHECKING:
+                if (amount <= oneThousand)
+                    return amount * standardRate;
             case SAVINGS:
-                if (amount <= 1000)
-                    return amount * 0.001;
+                if (amount <= oneThousand)
+                    return amount * standardRate;
                 else
-                    return 1 + (amount-1000) * 0.002;
+                    return 1 + (amount - oneThousand) * doubleRate;
 //            case SUPER_SAVINGS:
 //                if (amount <= 4000)
 //                    return 20;
             case MAXI_SAVINGS:
-                if (amount <= 1000)
-                    return amount * 0.02;
-                if (amount <= 2000)
-                    return 20 + (amount-1000) * 0.05;
-                return 70 + (amount-2000) * 0.1;
+                if (amount <= oneThousand)
+                    return amount * maxiStandardRate;
+                if (amount <= twoThousand)
+                    return 20 + (amount - oneThousand) * maxiRateOver1000;
+                return 70 + (amount - twoThousand) * maxiRateOver2000;
             default:
-                return amount * 0.001;
+                return amount * standardRate;
         }
     }
 
     public double sumTransactions() {
-       return checkIfTransactionsExist(true);
-    }
-
-    private double checkIfTransactionsExist(boolean checkAll) {
-        double amount = 0.0;
-        for (Transaction t: transactions)
+        double amount;
+        amount = 0.0;
+        for (Transaction t : transactions) {
             amount += t.amount;
+        }
         return amount;
     }
 
-    public int getAccountType() {
+    public AccountType getAccountType() {
         return accountType;
     }
 
